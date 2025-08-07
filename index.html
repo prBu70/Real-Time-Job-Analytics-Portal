@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recruiting Sector Tableau Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827;
+            color: #e5e7eb;
+        }
+        .chart-container {
+            background-color: #1f2937;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+        .glass-effect {
+            background: rgba(31, 41, 55, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .time-gate-message {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            flex-grow: 1;
+            text-align: center;
+            font-size: 1.125rem;
+            color: #9ca3af;
+        }
+        /* Toggle Switch Styles */
+        .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #4b5563; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #2563eb; }
+        input:checked + .slider:before { transform: translateX(26px); }
+    </style>
+</head>
+<body class="p-2 sm:p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <header class="text-center mb-8 sm:mb-12">
+            <h1 class="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight leading-tight">Real-Time Job Analytics Portal</h1>
+            <p class="mt-2 sm:mt-4 text-base sm:text-lg text-gray-400">A dynamic, responsive dashboard visualizing recruitment data.</p>
+        </header>
+
+        <!-- Master Toggle Switch -->
+        <div class="flex flex-col sm:flex-row items-center justify-center mb-6 sm:mb-8 p-3 sm:p-4 rounded-lg bg-gray-800/50 gap-2 sm:gap-4">
+            <span class="font-medium text-white text-center">Show All Charts (Ignore Time Rules)</span>
+            <label class="switch">
+                <input type="checkbox" id="master-toggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <main class="space-y-8 sm:space-y-12">
+            <!-- Chart 1: Country, Job Title, and Role -->
+            <section>
+                <h2 class="text-xl sm:text-2xl font-semibold text-white mb-2 sm:mb-4">Chart 1: Relationship between Country, Job Title, and Role</h2>
+                <div class="chart-container glass-effect min-h-[300px] sm:min-h-[400px]">
+                    <canvas id="chart1" class="w-full h-48 sm:h-80"></canvas>
+                </div>
+            </section>
+
+            <!-- Chart 2: Internships -->
+            <section>
+                <h2 class="text-xl sm:text-2xl font-semibold text-white mb-2 sm:mb-4">Chart 2: Internships Analysis</h2>
+                <div class="chart-container glass-effect min-h-[300px] sm:min-h-[400px]">
+                    <div id="chart2-wrapper">
+                        <canvas id="chart2" class="w-full h-48 sm:h-80"></canvas>
+                    </div>
+                    <div id="chart2-gate" class="hidden time-gate-message">
+                        <p>This chart is only available between 3 PM and 5 PM IST.</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Chart 3: African Continent Job Openings -->
+            <section>
+                <h2 class="text-xl sm:text-2xl font-semibold text-white mb-2 sm:mb-4">Chart 3: Job Openings in Africa (Company Size > 80k)</h2>
+                <div class="chart-container glass-effect p-3 sm:p-6 min-h-[300px] sm:min-h-[400px]">
+                     <div id="chart3-list-wrapper" class="space-y-2 sm:space-y-4"></div>
+                     <div id="chart3-gate" class="hidden time-gate-message">
+                        <p>This chart is only available between 3 PM and 6 PM IST.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Chart 4: Mechanical Engineers in Asia -->
+            <section>
+                <h2 class="text-xl sm:text-2xl font-semibold text-white mb-2 sm:mb-4">Chart 4: Mechanical Engineers in Asia (Exp > 5yr)</h2>
+                <div class="chart-container glass-effect min-h-[300px] sm:min-h-[400px]">
+                    <div id="chart4-wrapper">
+                        <canvas id="chart4" class="w-full h-48 sm:h-80"></canvas>
+                    </div>
+                     <div id="chart4-gate" class="hidden time-gate-message">
+                        <p>This chart is only available between 3 PM and 5 PM IST.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Chart 5: Jobs in India & Germany -->
+            <section>
+                <h2 class="text-xl sm:text-2xl font-semibold text-white mb-2 sm:mb-4">Chart 5: Tech, Teaching & Aero Jobs in India & Germany</h2>
+                <div class="chart-container glass-effect min-h-[300px] sm:min-h-[400px]">
+                    <div id="chart5-wrapper">
+                        <canvas id="chart5" class="w-full h-48 sm:h-80"></canvas>
+                    </div>
+                     <div id="chart5-gate" class="hidden time-gate-message">
+                        <p>This chart is only available between 3 PM and 5 PM IST.</p>
+                    </div>
+                </div>
+            </section>
+            <!-- Methodology Section (moved to bottom) -->
+            <section id="methodology" class="mt-12">
+                <h2 class="text-2xl font-semibold text-white mb-4">Our Project Methodology</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-gray-300">
+                    <div class="p-5 rounded-xl bg-gray-800/80 shadow">
+                        <h3 class="font-bold text-lg text-blue-300 mb-2">1. Data Preparation (Python)</h3>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li><strong>Import:</strong> Loaded raw data into Jupyter Notebook.</li>
+                            <li><strong>Cleaning:</strong> Addressed missing values and standardized fields.</li>
+                            <li><strong>Export:</strong> Saved the processed dataset for visualization.</li>
+                        </ul>
+                    </div>
+                    <div class="p-5 rounded-xl bg-gray-800/80 shadow">
+                        <h3 class="font-bold text-lg text-blue-300 mb-2">2. Visualization (Tableau)</h3>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li><strong>Import:</strong> Brought cleaned data into Tableau.</li>
+                            <li><strong>Analysis:</strong> Built interactive charts and graphs.</li>
+                            <li><strong>Dashboard:</strong> Combined visuals into a single dashboard.</li>
+                            <li><strong>Publish:</strong> Shared via Tableau Public.</li>
+                        </ul>
+                    </div>
+                    <div class="p-5 rounded-xl bg-gray-800/80 shadow">
+                        <h3 class="font-bold text-lg text-blue-300 mb-2">3. Web Integration (HTML/JS)</h3>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li><strong>Development:</strong> Designed a responsive HTML dashboard in VS Code.</li>
+                            <li><strong>Embedding:</strong> Linked Tableau and custom charts.</li>
+                            <li><strong>Testing:</strong> Ensured cross-device compatibility.</li>
+                        </ul>
+                    </div>
+                    <div class="p-5 rounded-xl bg-gray-800/80 shadow">
+                        <h3 class="font-bold text-lg text-blue-300 mb-2">4. Deployment (Netlify)</h3>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li><strong>Platform:</strong> Selected Netlify for live hosting.</li>
+                            <li><strong>Upload:</strong> Deployed the project folder manually.</li>
+                            <li><strong>Access:</strong> <a href="https://jobortal1.netlify.app/" target="_blank" class="text-cyan-400 hover:underline">jobortal1.netlify.app</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+    <!-- Footer removed as requested -->
+        </main>
+    </div>
+
+    <script>
+        // --- MOCK DATA ---
+        const jobData = [
+            { company_name: 'Innovate Asia', company_size: 45000, job_title: 'Mechanical Engineer', experience: 6, country: 'Japan', salary: 65000, work_type: 'Full-time', gender_preference: 'Male', source: 'Idealist', contact_person: 'Ken Tanaka', qualification: 'B.tech', role: 'Senior', job_posting_date: '2023-07-20', lat: 35.6895, lon: 139.6917 },
+            { company_name: 'Tech Solutions SG', company_size: 25000, job_title: 'Mechanical Engineer', experience: 7, country: 'Singapore', salary: 75000, work_type: 'Part-time', gender_preference: 'Male', source: 'Idealist', contact_person: 'Li Wei', qualification: 'M.tech', role: 'Lead', job_posting_date: '2023-06-15', lat: 1.3521, lon: 103.8198 },
+            { company_name: 'Safari Tech', company_size: 90000, job_title: 'DevOps Engineer', experience: 8, country: 'Kenya', salary: 90000, work_type: 'Full-time', gender_preference: 'Male', source: 'Indeed', contact_person: 'Adebayo Okoro', qualification: 'B.tech', role: 'Senior', job_posting_date: '2023-09-01', lat: -1.2921, lon: 36.8219 },
+            { company_name: 'Nile Innovations', company_size: 120000, job_title: 'Data Architect', experience: 10, country: 'Egypt', salary: 110000, work_type: 'Full-time', gender_preference: 'Male', source: 'Indeed', contact_person: 'Amir Khalid', qualification: 'M.tech', role: 'Architect', job_posting_date: '2023-09-05', lat: 30.0444, lon: 31.2357 },
+            { company_name: 'Lagos Digital', company_size: 85000, job_title: 'Database Admin', experience: 7, country: 'Nigeria', salary: 85000, work_type: 'Full-time', gender_preference: 'Male', source: 'Indeed', contact_person: 'Adanna Chioma', qualification: 'PhD', role: 'Senior', job_posting_date: '2023-08-20', lat: 6.5244, lon: 3.3792 },
+            { company_name: 'Berlin Data Corp', company_size: 15000, job_title: 'Data Scientist', experience: 3, country: 'Germany', salary: 110000, work_type: 'Full-time', gender_preference: 'Female', source: 'Indeed', contact_person: 'Anna Schmidt', qualification: 'B.tech', role: 'Associate', job_posting_date: '2023-07-15' },
+            { company_name: 'Bangalore AI', company_size: 20000, job_title: 'Data Scientist', experience: 4, country: 'India', salary: 120000, work_type: 'Full-time', gender_preference: 'Female', source: 'Indeed', contact_person: 'Priya Sharma', qualification: 'B.tech', role: 'Associate', job_posting_date: '2023-06-30' },
+            { company_name: 'Delhi Data Labs', company_size: 22000, job_title: 'Art Teacher', experience: 6, country: 'India', salary: 15000, work_type: 'Full-time', gender_preference: 'Female', source: 'Indeed', contact_person: 'Rohan Verma', qualification: 'B.tech', role: 'Lead Teacher', job_posting_date: '2023-07-25' },
+            { company_name: 'Frankfurt Aero', company_size: 12000, job_title: 'AeroSpace Engineer', experience: 2.5, country: 'Germany', salary: 105000, work_type: 'Full-time', gender_preference: 'Female', source: 'Indeed', contact_person: 'Sophie Becker', qualification: 'B.tech', role: 'Junior', job_posting_date: '2023-05-20' },
+            { company_name: 'Global Interns', company_size: 40000, job_title: 'UX Intern', experience: 0, country: 'Thailand', salary: 5000, work_type: 'Intern', gender_preference: 'Female', source: 'LinkedIn', contact_person: 'Sara Chen', qualification: 'Student', role: 'Intern', job_posting_date: '2023-10-01', lat: 9.0, lon: 100.0 },
+            { company_name: 'Pacific Dev', company_size: 30000, job_title: 'QA Intern', experience: 0, country: 'Vietnam', salary: 4000, work_type: 'Intern', gender_preference: 'Male', source: 'LinkedIn', contact_person: 'Peter Nguyen', qualification: 'Student', role: 'Intern', job_posting_date: '2023-10-02', lat: 8.5, lon: 106.0 },
+            { company_name: 'Seoul Dynamics', company_size: 30000, job_title: 'Junior Dev', experience: 1, country: 'South Korea', salary: 55000, work_type: 'Full-time', gender_preference: 'Male', source: 'Idealist', contact_person: 'Park Ji-hoon', qualification: 'B.tech', role: 'Junior', job_posting_date: '2023-08-01', lat: 37.5665, lon: 126.9780 },
+        ];
+        
+        const asianCountries = ['Japan', 'Singapore', 'South Korea', 'China', 'India', 'Thailand', 'Vietnam'];
+        const africanCountries = ['Kenya', 'Egypt', 'Nigeria', 'South Africa'];
+        
+        // --- GLOBAL STATE ---
+        let chartInstances = {}; // To hold chart objects for destruction
+        let forceShowAll = false;
+
+        // --- TIMEZONE HELPER ---
+        function getCurrentIstHour() {
+            const now = new Date();
+            const istTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
+            return istTime.getHours();
+        }
+
+        // --- CHART 1: Country, Job Title, Role ---
+        function renderChart1() {
+            if(chartInstances.chart1) chartInstances.chart1.destroy();
+            const ctx = document.getElementById('chart1').getContext('2d');
+            const roleToRadius = { 'Intern': 5, 'Junior': 10, 'Associate': 15, 'Senior': 20, 'Lead': 25, 'Architect': 30, 'Lead Teacher': 25 };
+            const countries = [...new Set(jobData.map(j => j.country))];
+            const jobTitles = [...new Set(jobData.map(j => j.job_title))];
+            const chartData = jobData.map(job => ({
+                x: countries.indexOf(job.country) + Math.random() * 0.5 - 0.25,
+                y: jobTitles.indexOf(job.job_title) + Math.random() * 0.5 - 0.25,
+                r: roleToRadius[job.role] || 5,
+                label: `${job.company_name}: ${job.job_title} (${job.role})`
+            }));
+            chartInstances.chart1 = new Chart(ctx, {
+                type: 'bubble',
+                data: { datasets: [{ label: 'Jobs', data: chartData, backgroundColor: 'rgba(59, 130, 246, 0.5)', borderColor: 'rgba(59, 130, 246, 1)' }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { tooltip: { callbacks: { label: (context) => context.raw.label } }, legend: { labels: { color: '#e5e7eb' } } },
+                    scales: {
+                        y: { ticks: { color: '#9ca3af', callback: (value, index) => jobTitles[index] || '' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } },
+                        x: { ticks: { color: '#9ca3af', callback: (value, index) => countries[index] || '' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } }
+                    }
+                }
+            });
+        }
+
+        // --- CHART 2: Internships ---
+        function renderChart2() {
+            if(chartInstances.chart2) chartInstances.chart2.destroy();
+            const wrapper = document.getElementById('chart2-wrapper');
+            const gate = document.getElementById('chart2-gate');
+            const istHour = getCurrentIstHour();
+
+            if (forceShowAll || (istHour >= 15 && istHour < 17)) {
+                wrapper.classList.remove('hidden'); gate.classList.add('hidden');
+                const forbiddenInitials = ['A', 'B', 'C', 'D'];
+                const filteredData = jobData.filter(job => job.work_type === 'Intern' && job.lat < 10 && !forbiddenInitials.includes(job.company_name.charAt(0).toUpperCase()) && job.job_title.length <= 10 && job.company_size < 50000);
+                const preferenceCounts = filteredData.reduce((acc, job) => { acc[job.gender_preference] = (acc[job.gender_preference] || 0) + 1; return acc; }, {});
+                const ctx = document.getElementById('chart2').getContext('2d');
+                chartInstances.chart2 = new Chart(ctx, {
+                    type: 'pie',
+                    data: { labels: Object.keys(preferenceCounts), datasets: [{ label: 'Gender Preference', data: Object.values(preferenceCounts), backgroundColor: ['rgba(236, 72, 153, 0.6)', 'rgba(34, 197, 94, 0.6)'], borderColor: ['rgba(236, 72, 153, 1)', 'rgba(34, 197, 94, 1)'], borderWidth: 1 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { color: '#e5e7eb' } } } }
+                });
+            } else {
+                wrapper.classList.add('hidden'); gate.classList.remove('hidden');
+            }
+        }
+
+        // --- CHART 3: African Continent ---
+        function renderChart3() {
+            const wrapper = document.getElementById('chart3-list-wrapper');
+            const gate = document.getElementById('chart3-gate');
+            const istHour = getCurrentIstHour();
+            wrapper.innerHTML = '';
+
+            if (forceShowAll || (istHour >= 15 && istHour < 18)) {
+                wrapper.classList.remove('hidden'); gate.classList.add('hidden');
+                const filteredData = jobData.filter(job => ['B.tech', 'M.tech', 'PhD'].includes(job.qualification) && job.work_type === 'Full-time' && africanCountries.includes(job.country) && job.job_title.startsWith('D') && job.gender_preference === 'Male' && job.company_size > 80000 && job.contact_person.startsWith('A') && job.source === 'Indeed');
+                if (filteredData.length === 0) { wrapper.innerHTML = `<p class="text-gray-400 text-center">No matching job openings found.</p>`; return; }
+                filteredData.forEach(job => {
+                    const jobElement = document.createElement('div');
+                    jobElement.className = 'p-4 rounded-lg bg-gray-900/50 border border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4';
+                    jobElement.innerHTML = `<div><h4 class="font-bold text-lg text-cyan-400">${job.job_title}</h4><p class="text-gray-300">${job.company_name} - ${job.country}</p><p class="text-sm text-gray-400">Contact: ${job.contact_person} | Qualification: ${job.qualification}</p></div><a href="https://www.google.com/maps?q=${job.lat},${job.lon}" target="_blank" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors whitespace-nowrap"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>Show on Map</a>`;
+                    wrapper.appendChild(jobElement);
+                });
+            } else {
+                wrapper.classList.add('hidden'); gate.classList.remove('hidden');
+            }
+        }
+        
+        // --- CHART 4: Mechanical Engineers ---
+        function renderChart4() {
+            if(chartInstances.chart4) chartInstances.chart4.destroy();
+            const wrapper = document.getElementById('chart4-wrapper');
+            const gate = document.getElementById('chart4-gate');
+            const istHour = getCurrentIstHour();
+
+            if (forceShowAll || (istHour >= 15 && istHour < 17)) {
+                wrapper.classList.remove('hidden'); gate.classList.add('hidden');
+                const filteredData = jobData.filter(job => job.company_size < 50000 && job.job_title === 'Mechanical Engineer' && job.experience > 5 && asianCountries.includes(job.country) && job.salary > 50000 && ['Full-time', 'Part-time'].includes(job.work_type) && job.gender_preference === 'Male' && job.source === 'Idealist');
+                const ctx = document.getElementById('chart4').getContext('2d');
+                chartInstances.chart4 = new Chart(ctx, {
+                    type: 'bar',
+                    data: { labels: filteredData.map(job => job.company_name), datasets: [{ label: 'Company Size', data: filteredData.map(job => job.company_size), backgroundColor: 'rgba(96, 165, 250, 0.6)', borderColor: 'rgba(96, 165, 250, 1)', borderWidth: 1 }] },
+                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { color: '#9ca3af' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } }, x: { ticks: { color: '#9ca3af' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } } }, plugins: { legend: { labels: { color: '#e5e7eb' } } } }
+                });
+            } else {
+                wrapper.classList.add('hidden'); gate.classList.remove('hidden');
+            }
+        }
+
+        // --- CHART 5: India & Germany ---
+        function renderChart5() {
+            if(chartInstances.chart5) chartInstances.chart5.destroy();
+            const wrapper = document.getElementById('chart5-wrapper');
+            const gate = document.getElementById('chart5-gate');
+            const istHour = getCurrentIstHour();
+            
+            if (forceShowAll || (istHour >= 15 && istHour < 17)) {
+                wrapper.classList.remove('hidden'); gate.classList.add('hidden');
+                const jobTitles = ['Data Scientist', 'Art Teacher', 'AeroSpace Engineer'];
+                const filteredData = jobData.filter(job => ['India', 'Germany'].includes(job.country) && job.qualification === 'B.tech' && job.work_type === 'Full-time' && job.experience > 2 && jobTitles.includes(job.job_title) && job.salary > 10000 && job.gender_preference === 'Female' && new Date(job.job_posting_date) < new Date('2023-08-01') && job.source === 'Indeed');
+                const indiaColor = 'rgba(251, 146, 60, 0.6)'; const germanyColor = 'rgba(74, 222, 128, 0.6)';
+                const indiaBorder = 'rgba(251, 146, 60, 1)'; const germanyBorder = 'rgba(74, 222, 128, 1)';
+                const ctx = document.getElementById('chart5').getContext('2d');
+                chartInstances.chart5 = new Chart(ctx, {
+                    type: 'bar',
+                    data: { labels: filteredData.map(job => `${job.company_name} (${job.job_title})`), datasets: [{ label: 'Salary (USD)', data: filteredData.map(job => job.salary), backgroundColor: filteredData.map(job => job.country === 'India' ? indiaColor : germanyColor), borderColor: filteredData.map(job => job.country === 'India' ? indiaBorder : germanyBorder), borderWidth: 1 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (context) => `Salary: ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y)}` } } }, scales: { y: { ticks: { color: '#9ca3af' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } }, x: { ticks: { color: '#9ca3af' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } } } }
+                });
+            } else {
+                wrapper.classList.add('hidden'); gate.classList.remove('hidden');
+            }
+        }
+
+        function renderAllCharts() {
+            renderChart1();
+            renderChart2();
+            renderChart3();
+            renderChart4();
+            renderChart5();
+        }
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggle = document.getElementById('master-toggle');
+            toggle.addEventListener('change', (event) => {
+                forceShowAll = event.target.checked;
+                renderAllCharts();
+            });
+            renderAllCharts();
+        });
+    </script>
+</body>
+</html>
